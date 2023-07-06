@@ -59,6 +59,13 @@ enum Opt {
     /// Get and save in local storage
     Get {
         image_name: String,
+
+        #[clap(parse(from_os_str))]
+        output: PathBuf,
+
+        /// Name of container, use UUID v4 hyphenated if not set.
+        #[clap(short = 't', long = "tag")]
+        tag: Option<String>,
     },
 
     /// Push oci-archive to registry
@@ -153,6 +160,13 @@ fn main() -> Result<()> {
 
         Opt::Get { image_name } => {
             let image_name = ocipkg::ImageName::parse(&image_name)?;
+
+            println!(
+                "{} >> {}",
+                image_name,
+                ocipkg::local::image_dir(&image_name)?.display()
+            );
+
             ocipkg::distribution::get_image(&image_name)?;
         }
 

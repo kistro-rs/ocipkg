@@ -29,9 +29,12 @@ tar = "0.4.38"
 version = "0.2.0"
 path = "../ocipkg"
 
+[package.metadata.ocipkg]
+registry = "ghcr.io/shawn111/ocipkg/ocipkg"
+
 [[bin]]
 name = "ocipkg"
-doc = false # To avoid overwriting documents for ocipkg library
+#doc = false # To avoid overwriting documents for ocipkg library
 
 [[bin]]
 name = "cargo-ocipkg"

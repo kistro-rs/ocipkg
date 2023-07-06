@@ -91,6 +91,9 @@ impl Client {
         let url = self
             .url
             .join(&format!("/v2/{}/manifests/{}", self.name, reference))?;
+
+        println!("manifests.url: {}", url);
+
         let res = self.call(self.get(&url).set(
             "Accept",
             &format!(

@@ -46,8 +46,14 @@ pub fn get_image(image_name: &ImageName) -> Result<()> {
     let ImageName {
         name, reference, ..
     } = image_name;
+
+    println!("url: {}", image_name.registry_url()?);
+
     let mut client = Client::new(image_name.registry_url()?, name.clone())?;
+
     let manifest = client.get_manifest(reference)?;
+    println!("=======================");
+
     let dest = crate::local::image_dir(image_name)?;
     log::info!("Get {} into {}", image_name, dest.display());
     for layer in manifest.layers() {
