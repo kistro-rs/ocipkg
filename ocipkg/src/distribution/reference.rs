@@ -28,7 +28,7 @@ impl fmt::Display for Reference {
 }
 
 lazy_static::lazy_static! {
-    static ref REF_RE: Regex = Regex::new(r"^[a-zA-Z0-9_][a-zA-Z0-9._-]{0,127}$").unwrap();
+    static ref REF_RE: Regex = Regex::new(r"^[a-zA-Z0-9_][:a-zA-Z0-9._-]{0,127}$").unwrap();
 }
 
 impl Reference {

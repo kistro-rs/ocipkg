@@ -99,6 +99,36 @@ impl Client {
                 MediaType::ImageManifest,
             ),
         ))?;
+
+        if res.content_type().eq(&format!("{}", MediaType::ImageIndex))
+            || res.content_type().eq(&format!(
+                "{}",
+                MediaType::ImageIndex.to_docker_v2s2().unwrap()
+            ))
+        {
+            let arch: Arch = if cfg!(target_arch = "x86_64") {
+                Arch::Amd64
+            } else if cfg!(target_arch = "aarch64") {
+                Arch::ARM64
+            } else {
+                unimplemented!("Unsupported CPU")
+            };
+
+            let mi = ImageIndex::from_reader(res.into_reader())?;
+            println!("{:?}, {}", mi.to_string(), arch);
+            for m in mi.manifests() {
+                if let Some(p) = m.platform() {
+                    println!("{:?}", p.architecture());
+                    println!("{:?}", p);
+                    if p.architecture() == &arch {
+                        println!("{:?}", m.digest());
+
+                        return Ok(self.get_manifest(&Reference::new(m.digest())?)?);
+                    }
+                }
+            }
+            panic!("xxx");
+        }
         let manifest = ImageManifest::from_reader(res.into_reader())?;
         Ok(manifest)
     }
