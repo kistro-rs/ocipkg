@@ -1,0 +1,48 @@
+name: Rust
+
+on:
+  push:
+    branches: [ "develop", "github" ]
+  pull_request:
+    branches: [ "develop", "github" ]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - aarch64-unknown-linux-gnu
+          - x86_64-unknown-linux-gnu
+#          - x86_64-unknown-linux-musl
+
+    #container:
+    #  image: redhat/ubi8:latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        components: rustfmt
+        profile: minimal
+        override: true
+        target: ${{ matrix.target }}
+    - name: Build
+      uses: actions-rs/cargo@v1
+      with:
+        use-cross: true
+        command: build
+        args: --release --target ${{ matrix.target }}
+    - name: List aritfacts
+      run: ls target/*/*
+    - name: Upload aritfacts
+      uses: actions/upload-artifact@v3
+      with:
+        path: |
+          target/*/release/ocipkg
