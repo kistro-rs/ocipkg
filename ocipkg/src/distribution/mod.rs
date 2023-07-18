@@ -48,11 +48,17 @@ pub fn unpack_image(image_name: &ImageName, dest: &PathBuf) -> Result<()> {
         name, reference, ..
     } = image_name;
     let mut client = Client::new(image_name.registry_url()?, name.clone())?;
-    let manifest = client.get_manifest(reference)?;
 
     log::info!("Get {} into {}", image_name, dest.display());
-    for layer in manifest.layers() {
+    let manifest = client.get_manifest(reference)?;
+    let layers = manifest.layers();
+
+    if layers.len() == 0 {
+        return Err(Error::MissingLayer);
+    }
+    for layer in layers {
         let blob = client.get_blob(&Digest::new(layer.digest())?)?;
+        log::debug!("[{}] layer {:?}", image_name, blob);
         match layer.media_type() {
             MediaType::ImageLayerGzip => {}
             MediaType::Other(ty) => {
@@ -65,9 +71,8 @@ pub fn unpack_image(image_name: &ImageName, dest: &PathBuf) -> Result<()> {
         }
         let buf = flate2::read::GzDecoder::new(blob.as_slice());
         tar::Archive::new(buf).unpack(dest)?;
-        return Ok(());
     }
-    Err(Error::MissingLayer)
+    Ok(())
 }
 
 /// Get image from registry and save it into local storage
