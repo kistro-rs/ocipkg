@@ -53,9 +53,6 @@ pub fn unpack_image(image_name: &ImageName, dest: &PathBuf) -> Result<()> {
     let manifest = client.get_manifest(reference)?;
     let layers = manifest.layers();
 
-    if layers.len() == 0 {
-        return Err(Error::MissingLayer);
-    }
     for layer in layers {
         let blob = client.get_blob(&Digest::new(layer.digest())?)?;
         log::debug!("[{}] layer {:?}", image_name, blob);
@@ -71,6 +68,9 @@ pub fn unpack_image(image_name: &ImageName, dest: &PathBuf) -> Result<()> {
         }
         let buf = flate2::read::GzDecoder::new(blob.as_slice());
         tar::Archive::new(buf).unpack(dest)?;
+    }
+    if layers.len() == 0 {
+        return Err(Error::MissingLayer);
     }
     Ok(())
 }
